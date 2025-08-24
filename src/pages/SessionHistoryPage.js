@@ -1,19 +1,25 @@
-// src/pages/SessionHistoryPage.js
-import React, { useState, useEffect, useMemo } from 'react';
-import api from '../api'; 
-import Calendar from 'react-calendar';
+// src/pages/SessionHistoryPage.js (Corrected)
+import React, { useEffect, useState } from 'react';
+import api from '../api'; // CHANGED: Use the new api instance
+import { format, isSameDay, startOfDay } from 'date-fns';
 import StreakDisplay from '../components/StreakDisplay';
+import Calendar from 'react-calendar';
 import './CalendarOverride.css';
 
 const SessionHistoryPage = () => {
     const [logs, setLogs] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
-    const [calendarDate, setCalendarDate] = useState(new Date());
-
+    
+    // --- FIX IS HERE ---
+    // Define the 'selectedDate' state that was missing
+    const [selectedDate, setSelectedDate] = useState(new Date()); 
+    // The 'calendarDate' state is no longer needed if we use selectedDate for the calendar
+    
     useEffect(() => {
         const fetchLogs = async () => {
             try {
+                // CHANGED: Use the api instance to fetch logs
                 const response = await api.get('/api/solosync2/logs/');
                 setLogs(response.data);
             } catch (err) {
@@ -26,88 +32,61 @@ const SessionHistoryPage = () => {
         fetchLogs();
     }, []);
 
-    const filteredLogs = useMemo(() => {
-        return logs.filter(log => {
-            const logDate = new Date(log.completed_at);
-            return logDate.toDateString() === selectedDate.toDateString();
-        });
-    }, [logs, selectedDate]);
+    const completedDates = logs.map(log => startOfDay(new Date(log.completed_at)));
 
-    const tileContent = ({ date, view }) => {
+    const filteredLogs = selectedDate 
+        ? logs.filter(log => isSameDay(new Date(log.completed_at), selectedDate))
+        : [];
+
+    const tileClassName = ({ date, view }) => {
         if (view === 'month') {
-            const hasLog = logs.some(log =>
-                new Date(log.completed_at).toDateString() === date.toDateString()
-            );
-            if (hasLog) {
-                return <span className="text-yellow-400 text-lg absolute top-0 right-1">★</span>;
+            const isCompleted = completedDates.some(compDate => isSameDay(date, compDate));
+            const isSelected = selectedDate && isSameDay(date, selectedDate);
+
+            if (isSelected) {
+                return 'bg-blue-500 text-white rounded-full';
+            }
+            if (isCompleted) {
+                return 'bg-green-500 text-white rounded-full';
             }
         }
         return null;
     };
 
-    if (loading) return <div className="text-center text-white">Loading history...</div>;
-    if (error) return <div className="text-center text-red-500">{error}</div>;
+    if (loading) return <div className="text-center mt-8">Loading history...</div>;
+    if (error) return <div className="text-center mt-8 text-red-400">{error}</div>;
 
     return (
-        <div className="max-w-4xl mx-auto">
-            {/* Stats Component at the top */}
-            <div className="mb-6">
-                <StreakDisplay logs={logs} />
-            </div>
-
-            {/* Calendar takes full width */}
-            <div className="mb-8">
-                <Calendar
-                    onChange={setSelectedDate}
-                    value={selectedDate}
-                    tileContent={tileContent}
-                    className="react-calendar"
-                />
-            </div>
-
-            {/* Logs for the selected day appear below */}
-            <div>
-                <h2 className="text-2xl font-bold text-white mb-4">
-                    Logs for {selectedDate.toLocaleDateString('en-US', {
-                        year: 'numeric', month: 'long', day: 'numeric'
-                    })}
-                </h2>
-                {filteredLogs.length === 0 ? (
-                    <div className="p-6 text-center bg-primary rounded-lg shadow-md text-gray-400">
-                        <p>No sessions logged on this day.</p>
-                    </div>
-                ) : (
-                    <div className="space-y-4">
-                        {filteredLogs.map(log => (
-                            <div key={log.id} className="p-6 bg-primary rounded-lg shadow-md text-gray-300">
-                                 <div className="flex justify-between items-start">
-                                    <div>
-                                        <h3 className="text-xl font-semibold text-white">{log.routine}</h3>
-                                        <p className="text-sm text-gray-500">
-                                            {new Date(log.completed_at).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })}
-                                        </p>
-                                    </div>
-                                    <span className="text-lg font-bold text-white">{log.duration_minutes} min</span>
-                                </div>
-                                <div className="mt-4 grid grid-cols-2 gap-4 text-center">
-                                    <div>
-                                        <p className="text-sm text-gray-400">Exertion</p>
-                                        <p className="text-2xl font-bold text-white">{log.exertion_rating}/10</p>
-                                    </div>
-                                    <div>
-                                        <p className="text-sm text-gray-400">Focus</p>
-                                        <p className="text-2xl font-bold text-white">{log.focus_rating}/10</p>
-                                    </div>
-                                </div>
-                                {log.notes && (
-                                    <div className="mt-4 pt-4 border-t border-accent">
-                                        <p className="text-gray-300 italic">"{log.notes}"</p>
-                                    </div>
-                                )}
-                            </div>
-                        ))}
-                    </div>
-                )}
+        <div className="max-w-4xl mx-auto p-4">
+            <h1 className="text-3xl font-bold mb-4 text-teal-400">Session History</h1>
+            <StreakDisplay logs={logs} />
+            <div className="flex flex-col md:flex-row gap-8 mt-6">
+                <div className="md:w-1/2">
+                    <Calendar
+                        onChange={setSelectedDate}
+                        value={selectedDate}
+                        tileClassName={tileClassName}
+                    />
+                </div>
+                <div className="md:w-1/2">
+                    <h2 className="text-2xl font-semibold mb-3 text-yellow-400">
+                        Logs for {selectedDate ? format(selectedDate, 'PPP') : 'No date selected'}
+                    </h2>
+                    {filteredLogs.length > 0 ? (
+                        <ul className="space-y-3">
+                            {filteredLogs.map(log => (
+                                <li key={log.id} className="bg-gray-800 p-3 rounded-lg">
+                                    <p className="font-semibold">{log.routine_name}</p>
+                                    <p className="text-sm text-gray-400">
+                                        Completed at: {format(new Date(log.completed_at), 'p')}
+                                    </p>
+                                </li>
+                            ))}
+                        </ul>
+                    ) : (
+                        <p className="text-gray-500">No sessions logged on this date.</p>
+                    )}
+                </div>
             </div>
         </div>
     );

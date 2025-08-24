@@ -1,7 +1,7 @@
 // src/pages/RoutineListPage.js
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import axios from 'axios';
+import api from '../api';
 import DrillCard from '../components/DrillCard';
 
 const RoutineListPage = () => {
@@ -13,10 +13,8 @@ const RoutineListPage = () => {
     useEffect(() => {
         const fetchRoutines = async () => {
             try {
-                const token = localStorage.getItem('token');
-                const response = await axios.get('/api/solosync2/routines/', {
-                    headers: { 'Authorization': `Bearer ${token}` }
-                });
+                // The 'api' instance automatically adds the token
+                const response = await api.get('/api/solosync2/routines/');
                 const sortedRoutines = response.data.map(routine => ({
                     ...routine,
                     drills: routine.drills.sort((a, b) => a.order - b.order)

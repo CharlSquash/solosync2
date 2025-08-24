@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import axios from 'axios';
+import api from '../api'; // CHANGED: Import 'api' instead of 'axios'
 
 const SessionSummaryPage = () => {
     const { routineId } = useParams();
@@ -25,10 +25,11 @@ const SessionSummaryPage = () => {
         };
 
         try {
-            const token = localStorage.getItem('token');
-            await axios.post('/api/solosync2/logs/', sessionData, {
-                headers: { 'Authorization': `Bearer ${token}` }
-            });
+            // --- CHANGED SECTION START ---
+            // Use 'api.post' which automatically adds the auth token.
+            // The third argument (headers) is no longer needed.
+            await api.post('/api/solosync2/logs/', sessionData);
+            // --- CHANGED SECTION END ---
             navigate('/');
         } catch (err) {
             setError('Failed to save session. Please try again.');

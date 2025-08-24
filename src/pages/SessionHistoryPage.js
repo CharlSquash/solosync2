@@ -1,6 +1,6 @@
 // src/pages/SessionHistoryPage.js
 import React, { useState, useEffect, useMemo } from 'react';
-import axios from 'axios';
+import api from '../api'; 
 import Calendar from 'react-calendar';
 import StreakDisplay from '../components/StreakDisplay';
 import './CalendarOverride.css';
@@ -9,15 +9,12 @@ const SessionHistoryPage = () => {
     const [logs, setLogs] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
-    const [selectedDate, setSelectedDate] = useState(new Date());
+    const [calendarDate, setCalendarDate] = useState(new Date());
 
     useEffect(() => {
         const fetchLogs = async () => {
             try {
-                const token = localStorage.getItem('token');
-                const response = await axios.get('/api/solosync2/logs/', {
-                    headers: { 'Authorization': `Bearer ${token}` }
-                });
+                const response = await api.get('/api/solosync2/logs/');
                 setLogs(response.data);
             } catch (err) {
                 setError('Failed to fetch session history.');

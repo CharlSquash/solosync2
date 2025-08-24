@@ -1,7 +1,7 @@
 // src/pages/SessionPlayerPage.js
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import axios from 'axios';
+import api from '../api'; // CHANGED: Import 'api' instead of 'axios'
 import Timer from '../components/Timer';
 
 const SessionPlayerPage = () => {
@@ -52,10 +52,11 @@ const SessionPlayerPage = () => {
     useEffect(() => {
         const fetchRoutineDetails = async () => {
             try {
-                const token = localStorage.getItem('token');
-                const response = await axios.get(`/api/solosync2/routines/${routineId}/`, {
-                    headers: { 'Authorization': `Bearer ${token}` }
-                });
+                // --- CHANGED SECTION START ---
+                // Use the 'api' instance which automatically includes the auth token.
+                const response = await api.get(`/api/solosync2/routines/${routineId}/`);
+                // --- CHANGED SECTION END ---
+
                 response.data.drills.sort((a, b) => a.order - b.order);
                 setRoutine(response.data);
             } catch (err) {

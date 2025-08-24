@@ -6,9 +6,8 @@ const SessionSummaryPage = () => {
     const { routineId } = useParams();
     const navigate = useNavigate();
 
-    const [duration, setDuration] = useState('');
-    const [exertion, setExertion] = useState(5);
-    const [focus, setFocus] = useState(5);
+    const [difficulty, setDifficulty] = useState(3);
+    const [likelihood, setLikelihood] = useState(3);
     const [notes, setNotes] = useState('');
     const [error, setError] = useState(null);
     const [isSubmitting, setIsSubmitting] = useState(false);
@@ -18,17 +17,10 @@ const SessionSummaryPage = () => {
         setIsSubmitting(true);
         setError(null);
 
-        if (!duration || parseInt(duration) <= 0) {
-            setError("Please enter a valid session duration.");
-            setIsSubmitting(false);
-            return;
-        }
-
         const sessionData = {
             routine: routineId,
-            duration_minutes: parseInt(duration),
-            exertion_rating: exertion,
-            focus_rating: focus,
+            difficulty_rating: difficulty,
+            likelihood_rating: likelihood,
             notes: notes,
         };
 
@@ -50,46 +42,31 @@ const SessionSummaryPage = () => {
             <h1 className="text-3xl font-bold text-center mb-6">Session Summary</h1>
             <form onSubmit={handleSubmit} className="p-6 bg-white rounded-lg shadow-md space-y-6">
                 <div>
-                    <label htmlFor="duration" className="block text-sm font-medium text-gray-700">
-                        Actual Duration (minutes)
-                    </label>
-                    <input
-                        type="number"
-                        id="duration"
-                        value={duration}
-                        onChange={(e) => setDuration(e.target.value)}
-                        className="w-full px-3 py-2 mt-1 border border-gray-300 rounded-md"
-                        placeholder="e.g., 30"
-                        required
-                    />
-                </div>
-
-                <div>
-                    <label htmlFor="exertion" className="block text-sm font-medium text-gray-700">
-                        Perceived Exertion: <span className="font-bold">{exertion}</span>
+                    <label htmlFor="difficulty" className="block text-sm font-medium text-gray-700">
+                        Difficulty: <span className="font-bold">{difficulty}</span>
                     </label>
                     <input
                         type="range"
-                        id="exertion"
+                        id="difficulty"
                         min="1"
-                        max="10"
-                        value={exertion}
-                        onChange={(e) => setExertion(parseInt(e.target.value))}
+                        max="5"
+                        value={difficulty}
+                        onChange={(e) => setDifficulty(parseInt(e.target.value))}
                         className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer"
                     />
                 </div>
 
                 <div>
-                    <label htmlFor="focus" className="block text-sm font-medium text-gray-700">
-                        Focus Level: <span className="font-bold">{focus}</span>
+                    <label htmlFor="likelihood" className="block text-sm font-medium text-gray-700">
+                        How likely are you to do this routine again?: <span className="font-bold">{likelihood}</span>
                     </label>
                     <input
                         type="range"
-                        id="focus"
+                        id="likelihood"
                         min="1"
-                        max="10"
-                        value={focus}
-                        onChange={(e) => setFocus(parseInt(e.target.value))}
+                        max="5"
+                        value={likelihood}
+                        onChange={(e) => setLikelihood(parseInt(e.target.value))}
                         className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer"
                     />
                 </div>

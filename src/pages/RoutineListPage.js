@@ -1,7 +1,7 @@
 // src/pages/RoutineListPage.js
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import api from '../api';
+import api from '../api'; // Use the new api instance
 import DrillCard from '../components/DrillCard';
 
 const RoutineListPage = () => {
@@ -13,8 +13,9 @@ const RoutineListPage = () => {
     useEffect(() => {
         const fetchRoutines = async () => {
             try {
-                // The 'api' instance automatically adds the token
+                // The 'api' instance automatically adds the token, no headers needed
                 const response = await api.get('/api/solosync2/routines/');
+
                 const sortedRoutines = response.data.map(routine => ({
                     ...routine,
                     drills: routine.drills.sort((a, b) => a.order - b.order)
@@ -30,50 +31,62 @@ const RoutineListPage = () => {
         fetchRoutines();
     }, []);
 
-    const toggleRoutine = (id) => {
-        setExpandedRoutineId(expandedRoutineId === id ? null : id);
+    const toggleRoutineDetails = (routineId) => {
+        setExpandedRoutineId(expandedRoutineId === routineId ? null : routineId);
     };
 
-    if (loading) return <div className="text-center text-white">Loading routines...</div>;
-    if (error) return <div className="text-center text-red-500">{error}</div>;
+    if (loading) {
+        return <div className="text-center mt-8">Loading routines...</div>;
+    }
+
+    if (error) {
+        return <div className="text-center mt-8 text-red-400">{error}</div>;
+    }
 
     return (
-        <div className="container mx-auto p-4">
-            <h1 className="text-3xl font-bold text-white mb-6">Your Routines</h1>
-            <div className="space-y-4">
-                {routines.map(routine => (
-                    <div key={routine.id} className="bg-gray-900 rounded-lg shadow-lg overflow-hidden">
-                        <div
-                            className="p-4 flex justify-between items-center cursor-pointer"
-                            onClick={() => toggleRoutine(routine.id)}
-                        >
-                            <div>
-                                <h2 className="text-2xl font-semibold text-white">{routine.name}</h2>
-                                <p className="text-gray-400">{routine.description}</p>
-                            </div>
-                            <Link to={`/session/${routine.id}`}>
-                                <button
-                                    onClick={(e) => e.stopPropagation()}
-                                    className="bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded transition-colors"
-                                >
-                                    Start
-                                </button>
-                            </Link>
-                        </div>
-                        {expandedRoutineId === routine.id && (
-                            <div className="p-4 border-t border-gray-700">
-                                <h3 className="text-xl font-bold text-white mb-4">Drills</h3>
-                                <div className="space-y-3">
-                                    {/* --- FIX IS HERE: Added the key prop --- */}
-                                    {routine.drills.map(drillInRoutine => (
-                                        <DrillCard key={drillInRoutine.drill.id} drill={drillInRoutine} />
-                                    ))}
+        <div className="max-w-4xl mx-auto">
+            <div className="flex justify-between items-center mb-6">
+                <h1 className="text-3xl font-bold text-teal-400">Routines</h1>
+            </div>
+
+            {routines.length === 0 ? (
+                <p className="text-center text-gray-400">No routines available. Please add some in the admin dashboard.</p>
+            ) : (
+                <div className="space-y-4">
+                    {routines.map((routine) => (
+                        <div key={routine.id} className="bg-gray-800 rounded-lg shadow-lg overflow-hidden">
+                            <div className="p-4 flex justify-between items-center cursor-pointer" onClick={() => toggleRoutineDetails(routine.id)}>
+                                <div>
+                                    <h2 className="text-xl font-bold text-yellow-400">{routine.name}</h2>
+                                    <p className="text-sm text-gray-400">{routine.drills.length} drills</p>
+                                </div>
+                                <div className="flex items-center space-x-4">
+                                    <Link 
+                                        to={`/session/${routine.id}`} 
+                                        className="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded transition duration-300"
+                                        onClick={(e) => e.stopPropagation()} // Prevents the accordion from toggling
+                                    >
+                                        Start
+                                    </Link>
+                                    <span className={`transform transition-transform duration-200 ${expandedRoutineId === routine.id ? 'rotate-180' : ''}`}>
+                                        ▼
+                                    </span>
                                 </div>
                             </div>
-                        )}
-                    </div>
-                ))}
-            </div>
+                            {expandedRoutineId === routine.id && (
+                                <div className="p-4 border-t border-gray-700">
+                                    <p className="text-gray-300 mb-4">{routine.description}</p>
+                                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                                        {routine.drills.map(drill => (
+                                            <DrillCard key={drill.id} drill={drill} />
+                                        ))}
+                                    </div>
+                                </div>
+                            )}
+                        </div>
+                    ))}
+                </div>
+            )}
         </div>
     );
 };

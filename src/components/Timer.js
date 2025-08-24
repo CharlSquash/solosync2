@@ -1,69 +1,71 @@
 // src/components/Timer.js
-import React, { useState, useEffect } from 'react';
+import React, { useEffect } from 'react';
 import { CircularProgressbar, buildStyles } from 'react-circular-progressbar';
 import 'react-circular-progressbar/dist/styles.css';
 
-const Timer = ({ initialSeconds, onComplete, isRunning, isResting, textToSpeak, settings }) => {
-    const [secondsLeft, setSecondsLeft] = useState(initialSeconds);
-    const [speechSpoken, setSpeechSpoken] = useState(false);
-
-    useEffect(() => {
-        setSecondsLeft(initialSeconds);
-        setSpeechSpoken(false); // Reset speech flag when the timer changes
-    }, [initialSeconds]);
+const Timer = ({
+    duration,
+    currentTime,
+    onTick,
+    onComplete,
+    isRunning,
+    isResting,
+    textToSpeak,
+    settings,
+    speechSpoken,
+    setSpeechSpoken
+}) => {
 
     useEffect(() => {
         if (!isRunning) {
             return;
         }
 
-        // Text-to-speech logic
+        // Text-to-speech logic now uses the speechSpoken prop
         if (settings.speechEnabled && textToSpeak && !speechSpoken) {
             const utterance = new SpeechSynthesisUtterance(textToSpeak);
             window.speechSynthesis.speak(utterance);
-            setSpeechSpoken(true);
+            setSpeechSpoken(true); // Update the parent's state
         }
-
-        // Sound chime logic
-        if (settings.soundEnabled) {
+        
+        // Start chime logic also uses the speechSpoken prop
+        if (settings.soundEnabled && !speechSpoken) {
             const audio = new Audio('/sounds/start_chime.mp3');
             audio.play();
         }
 
         const interval = setInterval(() => {
-            setSecondsLeft(prev => {
-                if (prev <= 1) {
-                    clearInterval(interval);
-                    if (settings.soundEnabled) {
-                        const audio = new Audio('/sounds/end_chime.mp3');
-                        audio.play();
-                    }
-                    onComplete();
-                    return 0;
+            if (currentTime <= 1) {
+                clearInterval(interval);
+                if (settings.soundEnabled) {
+                    const audio = new Audio('/sounds/end_chime.mp3');
+                    audio.play();
                 }
-                return prev - 1;
-            });
+                onComplete();
+            } else {
+                onTick();
+            }
         }, 1000);
 
         return () => clearInterval(interval);
-    }, [isRunning, onComplete, settings, textToSpeak, speechSpoken, initialSeconds]);
+    }, [isRunning, currentTime, onTick, onComplete, settings, speechSpoken, setSpeechSpoken, textToSpeak]);
 
-    const percentage = (initialSeconds - secondsLeft) / initialSeconds * 100;
-    const minutes = Math.floor(secondsLeft / 60);
-    const seconds = secondsLeft % 60;
+    const percentage = duration > 0 ? (currentTime / duration) * 100 : 0;
+    const minutes = Math.floor(currentTime / 60);
+    const seconds = currentTime % 60;
     const displayText = `${minutes}:${seconds < 10 ? '0' : ''}${seconds}`;
 
     const pathColor = isResting ? '#3B82F6' : '#10B981'; // Blue for rest, Green for drill
 
     return (
-        <div style={{ width: 250, height: 250, margin: 'auto' }}>
+        <div style={{ width: 200, height: 200, margin: 'auto' }}>
             <CircularProgressbar
                 value={percentage}
                 text={displayText}
                 styles={buildStyles({
                     textColor: 'white',
                     pathColor: pathColor,
-                    trailColor: '#324A5F', // accent color
+                    trailColor: '#324A5F',
                 })}
             />
         </div>

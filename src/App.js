@@ -22,7 +22,7 @@ const AppHeader = () => {
     }
 
     return (
-        <header className="bg-secondary text-white p-4 flex justify-between items-center shadow-md">
+        <header className="bg-gray-800 text-white p-4 flex justify-between items-center shadow-md">
             <h1 className="text-xl font-bold">SoloSync</h1>
             <nav>
                 <Link to="/" className="text-gray-300 hover:text-white mr-4">Routines</Link>
@@ -38,7 +38,7 @@ const AppHeader = () => {
 function App() {
   return (
     <Router>
-        <div className="bg-secondary min-h-screen">
+        <div className="bg-gray-900 text-gray-200 min-h-screen">
             <AppHeader />
             <main className="p-4 md:p-8">
                 <Routes>

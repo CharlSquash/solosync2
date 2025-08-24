@@ -1,15 +1,13 @@
 // tailwind.config.js
+/** @type {import('tailwindcss').Config} */
 module.exports = {
+  darkMode: 'class', // It's good practice to keep this for future use
   content: [
     "./src/**/*.{js,jsx,ts,tsx}",
   ],
   theme: {
     extend: {
-      colors: {
-        'primary': '#1B2A41',
-        'secondary': '#0C1821',
-        'accent': '#324A5F',
-      },
+      // No custom colors needed here if using defaults
     },
   },
   plugins: [],

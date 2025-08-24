@@ -2,68 +2,13 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import axios from 'axios';
-
-// A new, separate component for a single routine item to keep the code clean
-const RoutineItem = ({ routine, index, activeIndex, setActiveIndex }) => {
-    const isActive = index === activeIndex;
-
-    const toggleAccordion = () => {
-        setActiveIndex(isActive ? null : index);
-    };
-
-    // Find the YouTube link from the drills, if one exists
-    const youtubeLink = routine.drills.find(d => d.drill.youtube_link)?.drill.youtube_link;
-
-    return (
-        <div className="border border-accent rounded-lg overflow-hidden">
-            <button
-                onClick={toggleAccordion}
-                className="w-full text-left p-4 bg-primary hover:bg-accent text-white flex justify-between items-center transition-colors duration-300"
-            >
-                <span className="font-semibold text-lg">{routine.name}</span>
-                <span className={`transform transition-transform duration-300 ${isActive ? 'rotate-180' : ''}`}>
-                    &#9660;
-                </span>
-            </button>
-            {isActive && (
-                <div className="p-4 bg-secondary text-gray-300">
-                    <p className="mb-4">{routine.description}</p>
-                    <div className="mb-4">
-                        <h3 className="font-semibold mb-2">Drills:</h3>
-                        <ul className="list-disc list-inside">
-                            {routine.drills.map(drillItem => (
-                                <li key={drillItem.order}>
-                                    {drillItem.drill.name} ({drillItem.duration_minutes} min)
-                                </li>
-                            ))}
-                        </ul>
-                    </div>
-                    <div className="flex space-x-4">
-                        <Link to={`/session/${routine.id}`}>
-                            <button className="px-4 py-2 font-medium text-white bg-blue-600 rounded-md hover:bg-blue-700">
-                                Start Practice
-                            </button>
-                        </Link>
-                        {youtubeLink && (
-                            <a href={youtubeLink} target="_blank" rel="noopener noreferrer">
-                                <button className="px-4 py-2 font-medium text-white bg-red-600 rounded-md hover:bg-red-700">
-                                    Watch Video
-                                </button>
-                            </a>
-                        )}
-                    </div>
-                </div>
-            )}
-        </div>
-    );
-};
-
+import DrillCard from '../components/DrillCard';
 
 const RoutineListPage = () => {
     const [routines, setRoutines] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
-    const [activeIndex, setActiveIndex] = useState(null); // State for the accordion
+    const [expandedRoutineId, setExpandedRoutineId] = useState(null);
 
     useEffect(() => {
         const fetchRoutines = async () => {
@@ -72,7 +17,11 @@ const RoutineListPage = () => {
                 const response = await axios.get('/api/solosync2/routines/', {
                     headers: { 'Authorization': `Bearer ${token}` }
                 });
-                setRoutines(response.data);
+                const sortedRoutines = response.data.map(routine => ({
+                    ...routine,
+                    drills: routine.drills.sort((a, b) => a.order - b.order)
+                }));
+                setRoutines(sortedRoutines);
             } catch (err) {
                 setError('Failed to fetch routines.');
                 console.error(err);
@@ -80,24 +29,51 @@ const RoutineListPage = () => {
                 setLoading(false);
             }
         };
-
         fetchRoutines();
     }, []);
+
+    const toggleRoutine = (id) => {
+        setExpandedRoutineId(expandedRoutineId === id ? null : id);
+    };
 
     if (loading) return <div className="text-center text-white">Loading routines...</div>;
     if (error) return <div className="text-center text-red-500">{error}</div>;
 
     return (
-        <div className="max-w-4xl mx-auto">
+        <div className="container mx-auto p-4">
+            <h1 className="text-3xl font-bold text-white mb-6">Your Routines</h1>
             <div className="space-y-4">
-                {routines.map((routine, index) => (
-                    <RoutineItem
-                        key={routine.id}
-                        routine={routine}
-                        index={index}
-                        activeIndex={activeIndex}
-                        setActiveIndex={setActiveIndex}
-                    />
+                {routines.map(routine => (
+                    <div key={routine.id} className="bg-gray-900 rounded-lg shadow-lg overflow-hidden">
+                        <div
+                            className="p-4 flex justify-between items-center cursor-pointer"
+                            onClick={() => toggleRoutine(routine.id)}
+                        >
+                            <div>
+                                <h2 className="text-2xl font-semibold text-white">{routine.name}</h2>
+                                <p className="text-gray-400">{routine.description}</p>
+                            </div>
+                            <Link to={`/session/${routine.id}`}>
+                                <button
+                                    onClick={(e) => e.stopPropagation()}
+                                    className="bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded transition-colors"
+                                >
+                                    Start
+                                </button>
+                            </Link>
+                        </div>
+                        {expandedRoutineId === routine.id && (
+                            <div className="p-4 border-t border-gray-700">
+                                <h3 className="text-xl font-bold text-white mb-4">Drills</h3>
+                                <div className="space-y-3">
+                                    {/* --- FIX IS HERE: Added the key prop --- */}
+                                    {routine.drills.map(drillInRoutine => (
+                                        <DrillCard key={drillInRoutine.drill.id} drill={drillInRoutine} />
+                                    ))}
+                                </div>
+                            </div>
+                        )}
+                    </div>
                 ))}
             </div>
         </div>

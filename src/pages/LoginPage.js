@@ -1,6 +1,6 @@
 // src/pages/LoginPage.js
 import React, { useState } from 'react';
-import api from '../api'; 
+import api from '../api';
 import { useNavigate } from 'react-router-dom';
 
 const LoginPage = () => {
@@ -17,9 +17,9 @@ const LoginPage = () => {
             username,
             password,
         });
-        // REVERTED: Go back to using 'token' for the access token.
-        // We are ignoring the refresh token for now to ensure login works.
-        localStorage.setItem('token', response.data.access);
+        // Store both the access and refresh tokens with new keys
+        localStorage.setItem('access_token', response.data.access);
+        localStorage.setItem('refresh_token', response.data.refresh);
         navigate('/');
     } catch (err) {
       setError('Login failed. Please check your username and password.');

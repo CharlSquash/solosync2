@@ -9,7 +9,8 @@ const api = axios.create({
 api.interceptors.request.use(
   config => {
     const token = localStorage.getItem('access_token');
-    if (token) {
+    // Only add the token to the header if it exists AND the request is not for a new token
+    if (token && !config.url.endsWith('/token/') && !config.url.endsWith('/token/refresh/')) {
       config.headers['Authorization'] = `Bearer ${token}`;
     }
     return config;

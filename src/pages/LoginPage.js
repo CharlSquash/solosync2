@@ -1,8 +1,7 @@
 // src/pages/LoginPage.js
 
 import React, { useState } from 'react';
-// Import authApi instead of api
-import authApi from '../authApi';
+import authApi from '../authApi'; // Make sure you are importing authApi
 import { useNavigate } from 'react-router-dom';
 
 const LoginPage = () => {
@@ -19,26 +18,29 @@ const LoginPage = () => {
     localStorage.removeItem('refresh_token');
 
     try {
-        // Use authApi for the login request
+        // THIS IS THE CRITICAL LINE: It MUST be authApi.post
         const response = await authApi.post('/api/token/', {
             username,
             password,
         });
+
         localStorage.setItem('access_token', response.data.access);
         localStorage.setItem('refresh_token', response.data.refresh);
         navigate('/');
     } catch (err) {
       setError('Login failed. Please check your username and password.');
+      // This line is logging the 405 error you see in the console
       console.error('Login failed', err);
     }
   };
 
-  // ... rest of the component remains the same
+  // ... rest of the component
   return (
     <div className="flex items-center justify-center min-h-screen bg-gray-100">
       <div className="w-full max-w-md p-8 space-y-6 bg-white rounded-lg shadow-md">
         <h2 className="text-2xl font-bold text-center">SoloSync Login</h2>
         <form onSubmit={handleLogin} className="space-y-6">
+          {/* ... form inputs ... */}
           <div>
             <label htmlFor="username" className="text-sm font-medium text-gray-700">
               Username

@@ -1,5 +1,8 @@
+// src/pages/LoginPage.js
+
 import React, { useState } from 'react';
-import api from '../api';
+// Import authApi instead of api
+import authApi from '../authApi';
 import { useNavigate } from 'react-router-dom';
 
 const LoginPage = () => {
@@ -12,17 +15,15 @@ const LoginPage = () => {
     e.preventDefault();
     setError('');
 
-    // **THE KEY FIX**: Clear any old tokens before attempting a new login.
-    // This prevents an old, invalid token from being sent with the login request.
     localStorage.removeItem('access_token');
     localStorage.removeItem('refresh_token');
 
     try {
-        const response = await api.post('/api/token/', {
+        // Use authApi for the login request
+        const response = await authApi.post('/api/token/', {
             username,
             password,
         });
-        // Now, save the new, valid tokens from the successful login.
         localStorage.setItem('access_token', response.data.access);
         localStorage.setItem('refresh_token', response.data.refresh);
         navigate('/');
@@ -32,6 +33,7 @@ const LoginPage = () => {
     }
   };
 
+  // ... rest of the component remains the same
   return (
     <div className="flex items-center justify-center min-h-screen bg-gray-100">
       <div className="w-full max-w-md p-8 space-y-6 bg-white rounded-lg shadow-md">

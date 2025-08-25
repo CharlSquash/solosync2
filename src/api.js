@@ -1,4 +1,7 @@
+// src/api.js
+
 import axios from 'axios';
+import authApi from './authApi'; // Import the clean axios instance
 
 const api = axios.create({
   baseURL: process.env.REACT_APP_API_URL
@@ -24,14 +27,14 @@ api.interceptors.response.use(
   async (error) => {
     const originalRequest = error.config;
 
-    // Check if the error is a 401 Unauthorized and we haven't already retried
     if (error.response && error.response.status === 401 && !originalRequest._retry) {
       originalRequest._retry = true;
 
       const refreshToken = localStorage.getItem('refresh_token');
       if (refreshToken) {
         try {
-          const response = await axios.post(`${process.env.REACT_APP_API_URL}/api/token/refresh/`, {
+          // Use authApi for the refresh request
+          const response = await authApi.post('/api/token/refresh/', {
             refresh: refreshToken,
           });
 

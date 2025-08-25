@@ -11,13 +11,20 @@ const LoginPage = () => {
   const handleLogin = async (e) => {
     e.preventDefault();
     setError('');
+
+    // **THE KEY FIX**: Clear any old tokens before attempting a new login.
+    // This prevents an old, invalid token from being sent with the login request.
+    localStorage.removeItem('access_token');
+    localStorage.removeItem('refresh_token');
+
     try {
         const response = await api.post('/api/token/', {
             username,
             password,
         });
-        // Using the simple 'token' key that we know works
-        localStorage.setItem('token', response.data.access);
+        // Now, save the new, valid tokens from the successful login.
+        localStorage.setItem('access_token', response.data.access);
+        localStorage.setItem('refresh_token', response.data.refresh);
         navigate('/');
     } catch (err) {
       setError('Login failed. Please check your username and password.');

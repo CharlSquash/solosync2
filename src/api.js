@@ -1,58 +1,49 @@
 // src/api.js
-
 import axios from 'axios';
-import authApi from './authApi'; // Import the clean axios instance
+import authApi from './authApi';
 
 const api = axios.create({
-  baseURL: process.env.REACT_APP_API_URL
+  baseURL: process.env.REACT_APP_API_URL,
 });
 
-// Part 1: Automatically add the ACCESS token to every request header
 api.interceptors.request.use(
-  config => {
+  (config) => {
     const token = localStorage.getItem('access_token');
     if (token) {
-      config.headers['Authorization'] = `Bearer ${token}`;
+      config.headers['Authorization'] = 'Bearer ' + token;
     }
     return config;
   },
-  error => {
+  (error) => {
     return Promise.reject(error);
   }
 );
 
-// Part 2: Automatically refresh the token if it expires
 api.interceptors.response.use(
-  (response) => response,
+  (response) => {
+    return response;
+  },
   async (error) => {
     const originalRequest = error.config;
-
-    if (error.response && error.response.status === 401 && !originalRequest._retry) {
+    if (error.response.status === 401 && !originalRequest._retry) {
       originalRequest._retry = true;
-
-      const refreshToken = localStorage.getItem('refresh_token');
-      if (refreshToken) {
-        try {
-          // Use authApi for the refresh request
-          const response = await authApi.post('/api/token/refresh/', {
-            refresh: refreshToken,
-          });
-
-          localStorage.setItem('access_token', response.data.access);
-
-          originalRequest.headers['Authorization'] = `Bearer ${response.data.access}`;
-          return api(originalRequest);
-
-        } catch (refreshError) {
-          console.error("Refresh token is invalid, logging out.", refreshError);
-          localStorage.removeItem('access_token');
-          localStorage.removeItem('refresh_token');
-          window.location.href = '/login';
-          return Promise.reject(refreshError);
-        }
+      try {
+        const refreshToken = localStorage.getItem('refresh_token');
+        const response = await authApi.post('/api/token/refresh/', {
+          refresh: refreshToken,
+        });
+        const newAccessToken = response.data.access;
+        localStorage.setItem('access_token', newAccessToken);
+        api.defaults.headers.common['Authorization'] = 'Bearer ' + newAccessToken;
+        return api(originalRequest);
+      } catch (refreshError) {
+        // If refresh fails, logout the user
+        localStorage.removeItem('access_token');
+        localStorage.removeItem('refresh_token');
+        window.location.href = '/login';
+        return Promise.reject(refreshError);
       }
     }
-
     return Promise.reject(error);
   }
 );

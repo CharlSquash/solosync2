@@ -1,6 +1,5 @@
-// src/pages/LoginPage.js
-import React, 'useState } from 'react';
-import api from '../api'; 
+import React, { useState } from 'react';
+import api from '../api';
 import { useNavigate } from 'react-router-dom';
 
 const LoginPage = () => {
@@ -17,7 +16,7 @@ const LoginPage = () => {
             username,
             password,
         });
-        // We use a generic 'token' key for now.
+        // Using the simple 'token' key that we know works
         localStorage.setItem('token', response.data.access);
         navigate('/');
     } catch (err) {

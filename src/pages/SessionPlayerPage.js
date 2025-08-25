@@ -1,11 +1,11 @@
 // src/pages/SessionPlayerPage.js
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import api from '../api'; // CHANGED: Import 'api' instead of 'axios'
+import api from '../api'; 
 import Timer from '../components/Timer';
 
 const SessionPlayerPage = () => {
-    const { routineId } = useParams();
+    const { id } = useParams(); // CORRECTED: Was routineId, now it's id to match the route
     const navigate = useNavigate();
     const [routine, setRoutine] = useState(null);
     const [loading, setLoading] = useState(true);
@@ -21,7 +21,7 @@ const SessionPlayerPage = () => {
     // Lifted State
     const [currentTime, setCurrentTime] = useState(0);
     const [totalDuration, setTotalDuration] = useState(0);
-    const [speechSpoken, setSpeechSpoken] = useState(false); // New lifted state
+    const [speechSpoken, setSpeechSpoken] = useState(false);
 
     // Settings State
     const [settings, setSettings] = useState({
@@ -52,11 +52,9 @@ const SessionPlayerPage = () => {
     useEffect(() => {
         const fetchRoutineDetails = async () => {
             try {
-                // --- CHANGED SECTION START ---
-                // Use the 'api' instance which automatically includes the auth token.
-                const response = await api.get(`/api/solosync2/routines/${routineId}/`);
-                // --- CHANGED SECTION END ---
-
+                // CORRECTED: Use 'id' in the API call URL
+                const response = await api.get(`/api/solosync2/routines/${id}/`);
+                
                 response.data.drills.sort((a, b) => a.order - b.order);
                 setRoutine(response.data);
             } catch (err) {
@@ -68,9 +66,8 @@ const SessionPlayerPage = () => {
         };
         fetchRoutineDetails();
         return () => releaseWakeLock();
-    }, [routineId]);
+    }, [id]);
     
-    // This effect initializes the timer AND the speech flag for each new drill or rest period.
     useEffect(() => {
         if (!routine) return;
         const drill = routine.drills[currentDrillIndex];
@@ -78,11 +75,10 @@ const SessionPlayerPage = () => {
         const duration = isResting ? drill.rest_duration_seconds : drill.duration_minutes * 60;
         setTotalDuration(duration);
         setCurrentTime(duration);
-        setSpeechSpoken(false); // Reset the flag for the new period
+        setSpeechSpoken(false); 
     }, [routine, currentDrillIndex, isResting]);
 
 
-    // Effect for managing the wake lock and setting the text to speak
     useEffect(() => {
         if (isSessionRunning) {
             acquireWakeLock();
@@ -109,7 +105,7 @@ const SessionPlayerPage = () => {
                 setIsResting(true);
             } else {
                 setIsSessionRunning(false);
-                navigate(`/summary/${routine.id}`);
+                navigate(`/summary`, { state: { routineId: routine.id } });
             }
         }
     }, [isResting, currentDrillIndex, routine, navigate]);

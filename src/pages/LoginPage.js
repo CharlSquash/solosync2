@@ -1,8 +1,5 @@
 // src/pages/LoginPage.js
 import React, { useState } from 'react';
-// REMOVE the direct axios import
-// import axios from 'axios'; 
-// ADD the new api instance import
 import api from '../api'; 
 import { useNavigate } from 'react-router-dom';
 
@@ -16,15 +13,15 @@ const LoginPage = () => {
     e.preventDefault();
     setError('');
     try {
-            // CHANGE this line to use the new 'api' instance
-            const response = await api.post('/api/token/', {
-                username,
-                password,
-            });
-            localStorage.setItem('access_token', response.data.access);
-            localStorage.setItem('refresh_token', response.data.refresh);
-            navigate('/');
-        } catch (err) {
+        const response = await api.post('/api/token/', {
+            username,
+            password,
+        });
+        // REVERTED: Go back to using 'token' for the access token.
+        // We are ignoring the refresh token for now to ensure login works.
+        localStorage.setItem('token', response.data.access);
+        navigate('/');
+    } catch (err) {
       setError('Login failed. Please check your username and password.');
       console.error('Login failed', err);
     }

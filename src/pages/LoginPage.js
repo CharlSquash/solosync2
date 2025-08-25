@@ -1,6 +1,6 @@
 // src/pages/LoginPage.js
 import React, { useState } from 'react';
-import api from '../api';
+import authApi from '../authApi'; // <-- Import the new clean instance
 import { useNavigate } from 'react-router-dom';
 
 const LoginPage = () => {
@@ -13,11 +13,13 @@ const LoginPage = () => {
     e.preventDefault();
     setError('');
     try {
-        const response = await api.post('/api/token/', {
+        // Use the clean authApi instance for the login request.
+        // This will never send an Authorization header.
+        const response = await authApi.post('/api/token/', {
             username,
             password,
         });
-        // Store both the access and refresh tokens with new keys
+        // Store both tokens upon successful login
         localStorage.setItem('access_token', response.data.access);
         localStorage.setItem('refresh_token', response.data.refresh);
         navigate('/');

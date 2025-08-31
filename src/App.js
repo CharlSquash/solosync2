@@ -1,6 +1,6 @@
 // src/App.js
 import React from 'react';
-import { BrowserRouter as Router, Routes, Route, useNavigate } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, useNavigate, Link } from 'react-router-dom';
 import LoginPage from './pages/LoginPage';
 import RoutineListPage from './pages/RoutineListPage';
 import SessionPlayerPage from './pages/SessionPlayerPage';
@@ -13,8 +13,17 @@ function App() {
     <Router>
       <div className="App">
         <header className="bg-gray-800 text-white p-4 flex justify-between items-center">
-          <h1 className="text-xl">SoloSync</h1>
-          <LogoutButton />
+          <Link to="/" className="text-xl">SoloSync</Link>
+          <nav>
+            <ul className="flex items-center space-x-4">
+              <li>
+                <Link to="/history" className="text-white hover:text-gray-300">History</Link>
+              </li>
+              <li>
+                <LogoutButton />
+              </li>
+            </ul>
+          </nav>
         </header>
         <main>
           <Routes>

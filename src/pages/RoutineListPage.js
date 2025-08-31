@@ -44,9 +44,6 @@ const RoutineListPage = () => {
         <div className="max-w-4xl mx-auto">
             <div className="flex justify-between items-center mb-6">
                 <h1 className="text-3xl font-bold text-teal-400">Routines</h1>
-                <Link to="/history" className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded transition duration-300">
-                    History
-                </Link>
             </div>
 
             {routines.length === 0 ? (

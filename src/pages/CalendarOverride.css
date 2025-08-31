@@ -48,14 +48,12 @@
   font-weight: bold;
 }
 
-/* Style for days that have a session log */
-.has-log {
-  background-color: #007bff;
-  border-radius: 50%;
-  font-weight: bold;
-  color: white;
-}
-
 .react-calendar__tile {
     position: relative;
+}
+
+.star {
+    position: absolute;
+    top: 0;
+    right: 0;
 }

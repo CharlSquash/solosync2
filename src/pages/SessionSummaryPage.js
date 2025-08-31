@@ -40,7 +40,7 @@ const SessionSummaryPage = () => {
 
     return (
         <div className="max-w-2xl mx-auto">
-            <h1 className="text-3xl font-bold text-center mb-6">Session Summary</h1>
+            <h1 className="text-3xl font-bold text-center mb-6 text-white">Session Summary</h1>
             <form onSubmit={handleSubmit} className="p-6 bg-white rounded-lg shadow-md space-y-6">
                 <div>
                     <label htmlFor="difficulty" className="block text-sm font-medium text-gray-700">
@@ -81,7 +81,7 @@ const SessionSummaryPage = () => {
                         value={notes}
                         onChange={(e) => setNotes(e.target.value)}
                         rows="4"
-                        className="w-full px-3 py-2 mt-1 border border-gray-300 rounded-md"
+                        className="w-full px-3 py-2 mt-1 border border-gray-300 rounded-md text-gray-900"
                         placeholder="How did you feel? What went well? What could be improved?"
                     />
                 </div>

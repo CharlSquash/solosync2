@@ -44,6 +44,9 @@ const RoutineListPage = () => {
         <div className="max-w-4xl mx-auto">
             <div className="flex justify-between items-center mb-6">
                 <h1 className="text-3xl font-bold text-teal-400">Routines</h1>
+                <Link to="/history" className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded transition duration-300">
+                    History
+                </Link>
             </div>
 
             {routines.length === 0 ? (
@@ -58,8 +61,8 @@ const RoutineListPage = () => {
                                     <p className="text-sm text-gray-400">{routine.drills.length} drills</p>
                                 </div>
                                 <div className="flex items-center space-x-4">
-                                    <Link 
-                                        to={`/session/${routine.id}`} 
+                                    <Link
+                                        to={`/session/${routine.id}`}
                                         className="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded transition duration-300"
                                         onClick={(e) => e.stopPropagation()} // Prevents the accordion from toggling
                                     >
